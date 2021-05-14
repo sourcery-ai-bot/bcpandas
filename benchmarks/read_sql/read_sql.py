@@ -95,12 +95,11 @@ def read_sql(
         sql=f"SELECT TOP 2 * FROM {_from_clause} as qry", con=creds.engine
     )
 
-    if _existing_data.shape[0] > 0:
-        cols = _existing_data.columns
-        logger.debug("Successfully read the column names")
-    else:
+    if _existing_data.shape[0] <= 0:
         return _existing_data
 
+    cols = _existing_data.columns
+    logger.debug("Successfully read the column names")
     file_path = get_temp_file()
 
     # set delimiter
@@ -146,10 +145,11 @@ def read_sql(
             **csv_kwargs,
         )
     finally:
-        if not debug:
-            logger.debug(f"Deleting temp CSV file")
-            os.remove(file_path)
-        else:
+        if debug:
             logger.debug(
                 f"`read_sql` DEBUG mode, not deleting the file. CSV file is at {file_path}."
             )
+
+        else:
+            logger.debug(f"Deleting temp CSV file")
+            os.remove(file_path)

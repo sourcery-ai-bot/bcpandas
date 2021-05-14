@@ -72,11 +72,7 @@ class SqlCreds:
         self.driver = f"{{ODBC Driver {driver_version} for SQL Server}}"
 
         # Append a comma for use in connection strings (optionally blank)
-        if port:
-            port_str = f",{self.port}"
-        else:
-            port_str = ""
-
+        port_str = f",{self.port}" if port else ""
         db_url = (
             f"Driver={self.driver};Server=tcp:{self.server}{port_str};Database={self.database};"
         )
@@ -315,26 +311,20 @@ def to_sql(
     logger.debug(f"Created BCP format file at {fmt_file_path}")
 
     try:
-        if if_exists == "fail":
-            if sql_item_exists:
-                raise BCPandasValueError(
-                    f"The {sql_type} called {schema}.{table_name} already exists, "
-                    f"`if_exists` param was set to `fail`."
-                )
-            else:
-                _create_table(
-                    schema=schema, table_name=table_name, creds=creds, df=df, if_exists=if_exists
-                )
-        elif if_exists == "replace":
+        if if_exists == "fail" and sql_item_exists:
+            raise BCPandasValueError(
+                f"The {sql_type} called {schema}.{table_name} already exists, "
+                f"`if_exists` param was set to `fail`."
+            )
+        elif (
+            if_exists == "fail"
+            or if_exists == "append"
+            and not sql_item_exists
+            or if_exists == "replace"
+        ):
             _create_table(
                 schema=schema, table_name=table_name, creds=creds, df=df, if_exists=if_exists
             )
-        elif if_exists == "append":
-            if not sql_item_exists:
-                _create_table(
-                    schema=schema, table_name=table_name, creds=creds, df=df, if_exists=if_exists
-                )
-
         # BCP the data in
         bcp(
             sql_item=table_name,

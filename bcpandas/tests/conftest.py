@@ -52,13 +52,12 @@ def database(docker_db):
 
 @pytest.fixture(scope="session")
 def sql_creds():
-    creds = SqlCreds(
+    return SqlCreds(
         server=docker_db_obj.address,
         database=_db_name,
         username="sa",
         password=docker_db_obj.sa_sql_password,
     )
-    return creds
 
 
 @pytest.fixture(scope="session")
@@ -68,7 +67,6 @@ def pyodbc_creds(database):
         + f"Server={docker_db_obj.address};"
         + f"Database={_db_name};UID=sa;PWD={docker_db_obj.sa_sql_password};"
     )
-    engine = sa.engine.create_engine(
+    return sa.engine.create_engine(
         f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(db_url)}"
     )
-    return engine

@@ -121,10 +121,10 @@ def get_temp_file() -> str:
     Returns full path to a temporary file without creating it.
     """
     tmp_dir = tempfile.gettempdir()
-    file_path = os.path.join(
-        tmp_dir, "".join(random.choices(string.ascii_letters + string.digits, k=21))
+    return os.path.join(
+        tmp_dir,
+        "".join(random.choices(string.ascii_letters + string.digits, k=21)),
     )
-    return file_path
 
 
 def _escape(input_string: str) -> str:
@@ -198,13 +198,10 @@ def quote_this(this: str, skip: bool = False) -> str:
     On Windows ~~it's double quotes~~ we skip quoting, 
     on Linux it's single quotes.
     """
-    if isinstance(this, str):
-        if IS_WIN32:
-            return this  # TODO maybe change?
-        else:
-            return shlex.quote(this)
+    if IS_WIN32 or not isinstance(this, str):
+        return this  # TODO maybe change?
     else:
-        return this
+        return shlex.quote(this)
 
 
 def run_cmd(cmd: List[str]) -> int:
